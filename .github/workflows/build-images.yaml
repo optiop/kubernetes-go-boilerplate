@@ -1,0 +1,44 @@
+name: Production Frontend - Build and Deployment
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  AWS_REGION: eu-central-1
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+ 
+    - name: Set AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::615677714887:role/github-ecr-push-role
+        aws-region: ${{ env.AWS_REGION }}
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build static website by building docker image 
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: aws.amazone.ecr.com/sales:version-${{ github.sha }}
+        outputs: type=docker,dest=/tmp/image.tar
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        build-args: |
+          BUILD_REF=${{ github.sha }}
+          BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
