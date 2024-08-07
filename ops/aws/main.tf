@@ -1,15 +1,15 @@
 module "repository" {
   source = "./modules/repository"
   region = var.region
-  name   = "ardanlabs"
-  github_owner = "optiop"
-  github_repo = "kubernetes-go-boilerplate"
+  name   = var.stage
+  github_owner = var.github_owner
+  github_repo = var.github_repo
   github_oidc_provider_arn = var.github_oidc_provider_arn
 }
 
 module "cluster" {
   source = "./modules/cluster"
   region = var.region
-  cluster_name = "eks-cluster"
+  cluster_name = var.cluster_name
   cluster_version = "1.30"
 }
